@@ -8,6 +8,7 @@ that can be reused across projects.
 - Treat each user request as a skill creation or modification task unless explicitly unrelated.
 - Keep skills modular: one skill per folder with a focused purpose.
 - Ensure every skill folder contains a SKILL.md at its root.
+- Keep the README Skills list in sync when adding, renaming, or removing skills.
 - Prefer ASCII in file contents unless the user explicitly requests another language.
 
 ## Skill Authoring Standards
