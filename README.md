@@ -16,6 +16,9 @@ $skill-installer install --repo po-sen/skills --path <skill> --ref master
 
 ## Skills
 
+- add-functional-tests
+- add-integration-tests
+- add-unit-tests
 - draft-commit-message
 
 ## Skill Structure
