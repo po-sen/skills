@@ -4,31 +4,31 @@ This repo hosts shareable Codex skills you can reuse across projects.
 
 ## How to Use
 
-1. Add or update a skill in its own folder.
+1. Add or update a skill in `skills/<skill-name>/`.
 2. Ensure each skill folder contains a `SKILL.md` at the root.
 3. Keep skills focused and minimal.
 
 ## Install in Codex
 
 ```
-$skill-installer install --repo po-sen/skills --path <skill> --ref master
+$skill-installer install --repo po-sen/skills --path skills/<skill> --ref master
 ```
 
 ## Skills
 
-- add-functional-tests
-- add-integration-tests
-- add-unit-tests
-- clean-architecture-hexagonal-components
-- enforce-architecture-boundaries
-- draft-commit-message
-- dockerize-compose-multi-env
-- setup-lint-format
+- skills/add-functional-tests
+- skills/add-integration-tests
+- skills/add-unit-tests
+- skills/clean-architecture-hexagonal-components
+- skills/enforce-architecture-boundaries
+- skills/draft-commit-message
+- skills/dockerize-compose-multi-env
+- skills/setup-lint-format
 
 ## Skill Structure
 
 ```
-<skill-name>/
+skills/<skill-name>/
   SKILL.md
   references/   (optional)
   scripts/      (optional)
@@ -43,6 +43,6 @@ $skill-installer install --repo po-sen/skills --path <skill> --ref master
 
 ## Getting Started
 
-- Create a new folder for your skill.
+- Create a new folder under `skills/`.
 - Draft `SKILL.md` following the conventions above.
 - Keep instructions procedural and testable.
