@@ -19,6 +19,7 @@ $skill-installer install --repo po-sen/skills --path <skill> --ref master
 - add-functional-tests
 - add-integration-tests
 - add-unit-tests
+- clean-architecture-hexagonal-components
 - draft-commit-message
 - dockerize-compose-multi-env
 - setup-lint-format
