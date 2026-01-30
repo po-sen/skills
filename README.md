@@ -24,6 +24,7 @@ $skill-installer install --repo po-sen/skills --path skills/<skill> --ref master
 - skills/draft-commit-message
 - skills/dockerize-compose-multi-env
 - skills/setup-lint-format
+- skills/sdd-spec
 
 ## Skill Structure
 
