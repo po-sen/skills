@@ -35,18 +35,6 @@ Remove the installed skills:
 make clean-skills
 ```
 
-## Skills
-
-- skills/add-functional-tests
-- skills/add-integration-tests
-- skills/add-unit-tests
-- skills/clean-architecture-hexagonal-components
-- skills/enforce-architecture-boundaries
-- skills/draft-commit-message
-- skills/dockerize-compose-multi-env
-- skills/setup-lint-format
-- skills/sdd-spec
-
 ## Skill Structure
 
 ```
