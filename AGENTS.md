@@ -38,9 +38,7 @@ that can be reused across projects.
 
 ## Repo Tooling (Agent Notes)
 
-- Formatting is Prettier-based; if `node_modules` is missing, run `npm install` before any checks.
-- Before final output, run `npm run format:check`; if it fails, run `npm run format` then re-check.
-- Use `npm run format` to apply fixes and `npm run format:check` to verify.
-- `npm test` is wired to `format:check`.
-- Pre-commit hooks use `.pre-commit-config.yaml` and run `npm run -s format:check`.
-- Config files: `.prettierrc.json`, `.prettierignore`, `.editorconfig`, `package.json`.
+- Formatting is enforced via pre-commit hooks (Prettier + markdownlint).
+- Before final output, run `pre-commit run --all-files`.
+- Config files: `.pre-commit-config.yaml`, `.markdownlint.json`, `.prettierrc.json`,
+  `.prettierignore`, `.editorconfig`.
