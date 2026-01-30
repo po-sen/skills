@@ -39,7 +39,7 @@ boundaries. Components (bounded contexts) are optional for small projects.
 
 ## Steps
 
-1. Scan the repo for existing architecture cues (e.g., `src/components/`, `modules/`,
+1. Scan the repo for existing architecture cues (e.g., a `components/` or `modules/` directory,
    `bounded_contexts/`, `domain/`); summarize what you found.
 2. Default to the existing structure. If none exists, default to a single-module layout unless there
    are clear signs of multiple bounded contexts (e.g., distinct feature folders or multiple
@@ -48,7 +48,7 @@ boundaries. Components (bounded contexts) are optional for small projects.
    from domain language; ask a question only if strictly necessary to avoid incorrect placement.
 4. Ensure the directory structure exists for `shared_kernel/` and `bootstrap/`, plus
    `components/<component>/` (or equivalent such as `modules/<module>/`) when bounded contexts are
-   enabled.
+   enabled. Place these at the project source root (repo root or optional `src/`).
 5. Define or extend a single inbound port per use case in `application/ports/in`, using
    command-style input and explicit output DTOs.
 6. Implement the use case in `application/use_cases`, orchestrating domain behavior and interacting
@@ -62,94 +62,104 @@ boundaries. Components (bounded contexts) are optional for small projects.
 10. Implement inbound adapters in `adapters/inbound/*`: validate input, map to command/DTO, call the
     inbound port or command bus, map errors.
 11. Wire dependencies only in composition roots (`components/<name>/infrastructure/di` when
-    components are used, otherwise the module-level DI area) and `src/bootstrap/main.*`.
+    components are used, otherwise the module-level DI area) and in the bootstrap entry point (e.g.,
+    `bootstrap/main.*`).
 12. Add tests: domain unit tests, use case tests with mocked outbound ports, adapter
     integration/contract tests.
 13. Verify dependency boundaries by checking imports; fix any violations before finalizing.
 
 ## Notes
 
-Default structure (components optional for small projects):
+Default structure (components optional for small projects; adjust layout to fit your language's
+conventions):
 
 ```
-src/
-  shared_kernel/
-    domain/
-      events/
-      value_objects/
-      specifications/
-    application/
-      events/
-      messaging/
-  components/ (optional)
-    <component_name>/
-      domain/
-        entities/
-        value_objects/
-        services/
-        policies/
-        events/
-      application/
-        ports/
-          in/
-          out/
-        use_cases/
-        dto/
-        mappers/
-      adapters/
-        inbound/
-          http/
-            controllers/
-            middleware/
-          cli/
-          mq/
-        outbound/
-          persistence/
-          external/
-          messaging/
-      infrastructure/
-        drivers/
-        di/
-  bootstrap/
-    main.*
-```
-
-Single-module structure (when components are not used):
-
-```
-src/
+shared_kernel/
   domain/
-    entities/
-    value_objects/
-    services/
-    policies/
     events/
+    value_objects/
+    specifications/
   application/
-    ports/
-      in/
-      out/
-    use_cases/
-    dto/
-    mappers/
-  adapters/
-    inbound/
-      http/
-        controllers/
-        middleware/
-      cli/
-      mq/
-    outbound/
-      persistence/
-      external/
-      messaging/
-  infrastructure/
-    drivers/
-    di/
-  bootstrap/
-    main.*
+    events/
+    messaging/
+components/ (optional)
+  <component_name>/
+    domain/
+      entities/
+      value_objects/
+      services/
+      policies/
+      events/
+    application/
+      ports/
+        in/
+        out/
+      use_cases/
+      dto/
+      mappers/
+    adapters/
+      inbound/
+        http/
+          controllers/
+          middleware/
+        cli/
+        mq/
+      outbound/
+        persistence/
+        external/
+        messaging/
+    infrastructure/
+      drivers/
+      di/
+bootstrap/
+  main.*
 ```
+
+Single-module structure (when components are not used; adjust layout to fit your language's
+conventions):
+
+```
+domain/
+  entities/
+  value_objects/
+  services/
+  policies/
+  events/
+application/
+  ports/
+    in/
+    out/
+  use_cases/
+  dto/
+  mappers/
+adapters/
+  inbound/
+    http/
+      controllers/
+      middleware/
+    cli/
+    mq/
+  outbound/
+    persistence/
+    external/
+    messaging/
+infrastructure/
+  drivers/
+  di/
+bootstrap/
+  main.*
+```
+
+Note: The above directory structure is illustrative. Adjust the top-level placement to fit your
+language's standard project layout. For example, some projects keep source code in `src/` or
+`src/main` (common in Java/.NET), while others place the folders at the repository root (common in
+Go, Python, etc.). Follow the standard conventions of your language, as long as the separation of
+architectural layers (domain, application, adapters, etc.) remains intact.
 
 Non-negotiable rules (treat violations as errors):
+
+The following are strict architecture boundaries. Treat violations as errors, regardless of language
+or tooling.
 
 - Domain must not import `application/`.
 - Domain must not import `adapters/`, `infrastructure/`, or `bootstrap/`.
