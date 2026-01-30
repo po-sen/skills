@@ -16,34 +16,23 @@ $skill-installer install --repo po-sen/skills --path skills/<skill> --ref master
 
 ## Install All (Overwrite)
 
-```bash
-SKILLS_DIR="${CODEX_HOME:-$HOME/.codex}/skills"
-rm -rf \
-  "$SKILLS_DIR/add-functional-tests" \
-  "$SKILLS_DIR/add-integration-tests" \
-  "$SKILLS_DIR/add-unit-tests" \
-  "$SKILLS_DIR/clean-architecture-hexagonal-components" \
-  "$SKILLS_DIR/dockerize-compose-multi-env" \
-  "$SKILLS_DIR/draft-commit-message" \
-  "$SKILLS_DIR/enforce-architecture-boundaries" \
-  "$SKILLS_DIR/sdd-spec" \
-  "$SKILLS_DIR/setup-lint-format"
-```
+Overwrite your local Codex skills with the versions from this repo. This removes any existing skill
+folders with the same names under `${CODEX_HOME:-$HOME/.codex}/skills`.
 
 ```bash
-python3 "${CODEX_HOME:-$HOME/.codex}/skills/.system/skill-installer/scripts/install-skill-from-github.py" \
-  --repo po-sen/skills \
-  --ref master \
-  --path \
-  skills/add-functional-tests \
-  skills/add-integration-tests \
-  skills/add-unit-tests \
-  skills/clean-architecture-hexagonal-components \
-  skills/dockerize-compose-multi-env \
-  skills/draft-commit-message \
-  skills/enforce-architecture-boundaries \
-  skills/sdd-spec \
-  skills/setup-lint-format
+make install-skills
+```
+
+Optional overrides:
+
+```bash
+make install-skills CODEX_HOME=~/.codex SKILL_REPO=po-sen/skills SKILL_REF=master
+```
+
+Remove the installed skills:
+
+```bash
+make clean-skills
 ```
 
 ## Skills
