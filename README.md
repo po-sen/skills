@@ -14,6 +14,38 @@ This repo hosts shareable Codex skills you can reuse across projects.
 $skill-installer install --repo po-sen/skills --path skills/<skill> --ref master
 ```
 
+## Install All (Overwrite)
+
+```bash
+SKILLS_DIR="${CODEX_HOME:-$HOME/.codex}/skills"
+rm -rf \
+  "$SKILLS_DIR/add-functional-tests" \
+  "$SKILLS_DIR/add-integration-tests" \
+  "$SKILLS_DIR/add-unit-tests" \
+  "$SKILLS_DIR/clean-architecture-hexagonal-components" \
+  "$SKILLS_DIR/dockerize-compose-multi-env" \
+  "$SKILLS_DIR/draft-commit-message" \
+  "$SKILLS_DIR/enforce-architecture-boundaries" \
+  "$SKILLS_DIR/sdd-spec" \
+  "$SKILLS_DIR/setup-lint-format"
+```
+
+```bash
+python3 "${CODEX_HOME:-$HOME/.codex}/skills/.system/skill-installer/scripts/install-skill-from-github.py" \
+  --repo po-sen/skills \
+  --ref master \
+  --path \
+  skills/add-functional-tests \
+  skills/add-integration-tests \
+  skills/add-unit-tests \
+  skills/clean-architecture-hexagonal-components \
+  skills/dockerize-compose-multi-env \
+  skills/draft-commit-message \
+  skills/enforce-architecture-boundaries \
+  skills/sdd-spec \
+  skills/setup-lint-format
+```
+
 ## Skills
 
 - skills/add-functional-tests
