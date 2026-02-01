@@ -13,18 +13,18 @@ description:
 Create best-practice Dockerfile and docker-compose configurations for multi-environment deployments,
 grounded in repo inspection and explicit user confirmation of env vars and environment YAML files.
 
-# When to Use
+## When to Use
 
 Use for requests to dockerize a project or add Dockerfile/compose for production, staging, and test.
 See description for triggers.
 
-# Inputs
+## Inputs
 
 - Repository contents (source, README, configs, existing Docker/compose files).
 - User answers to the Q&A (runtime/build/test commands, ports, env vars, env file names, required
   services, and environment YAML filenames).
 
-# Outputs
+## Outputs
 
 - `Dockerfile`
 - `.dockerignore`
@@ -32,7 +32,7 @@ See description for triggers.
 - `docker-compose.<env>.yml` (prod/staging/test or custom per user)
 - `.env.example`
 
-# Steps
+## Steps
 
 1. Inspect the repo to infer stack and runtime.
 
@@ -42,7 +42,7 @@ See description for triggers.
 - Find ports and entrypoints using search (e.g., `rg 'PORT|listen\(|EXPOSE|uvicorn|gunicorn'`).
 - Check for Kubernetes/Helm or existing environment YAML files to mirror.
 
-2. Infer dependent services and env vars.
+1. Infer dependent services and env vars.
 
 - Search for DB/cache/queue/object storage usage and env vars (e.g., `DATABASE_URL`, `POSTGRES_*`,
   `REDIS_URL`, `BROKER_URL`, `S3_*`).
@@ -50,7 +50,7 @@ See description for triggers.
 - Note multi-process roles (worker/scheduler/migrate) based on tooling found.
 - Inspect existing `.env*` files to extract required variables.
 
-3. Ask mandatory Q&A before generating files.
+1. Ask mandatory Q&A before generating files.
 
 - Confirm/override runtime command and build command.
 - Confirm container port and host port mapping.
@@ -76,13 +76,13 @@ Q&A checklist (ask in order, keep answers short):
 - Migrations strategy (one-off service or `RUN_MIGRATIONS=1`)?
 - Test command and need for `tests` service?
 
-4. Create or update `.dockerignore`.
+1. Create or update `.dockerignore`.
 
 - Use a conservative baseline (see `references/dockerignore.md`) and remove any ignores that would
   break the build.
 - Ensure secrets and local env files are excluded.
 
-5. Write a production-grade `Dockerfile`.
+1. Write a production-grade `Dockerfile`.
 
 - Use multi-stage builds, non-root user, minimal runtime image, deterministic installs.
 - Select a template based on stack:
@@ -93,7 +93,7 @@ Q&A checklist (ask in order, keep answers short):
 - Set `CMD`/`ENTRYPOINT` to the confirmed runtime command.
 - Do not auto-run migrations by default; wire it behind a flag or a one-off service.
 
-6. Create compose files (base + overrides).
+1. Create compose files (base + overrides).
 
 - Base `docker-compose.yml` defines common services, networks, volumes, and healthchecks (see
   `references/compose-base.md`).
@@ -102,14 +102,14 @@ Q&A checklist (ask in order, keep answers short):
 - Add `worker`, `scheduler`, `migrate`, and `tests` services only if confirmed.
 - Keep secrets out of YAML; rely on env vars and `--env-file`.
 
-7. Generate `.env.example`.
+1. Generate `.env.example`.
 
 - Include all required env vars for app and dependencies.
 - Group by Common / Production / Staging / Test.
 - Provide safe placeholders for secrets and sane defaults where safe.
 - Align names with compose files and app config (see `references/env-example.md`).
 
-8. Validate.
+1. Validate.
 
 - Run
   `docker compose -f docker-compose.yml -f docker-compose.<env>.yml --env-file .env.<env> config`
@@ -117,7 +117,7 @@ Q&A checklist (ask in order, keep answers short):
 - If Docker is unavailable, note the exact commands for the user to run.
 - Optionally bring up staging or test once and run the `tests` service if defined.
 
-# Notes
+## Notes
 
 - Do not add services or integrations unless found in the repo or confirmed by the user.
 - If Docker/compose files already exist, confirm before overwriting or removing content.

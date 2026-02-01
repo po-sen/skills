@@ -19,7 +19,7 @@ description: >-
 ## File IO rule
 
 - Always create/update files in the repo (not only chat output).
-- Must create `specs/<YYYY-MM-DD>-<slug>/` and write the spec files there.
+- Must create `specs/YYYY-MM-DD-slug/` and write the spec files there.
 - If the user only wants a draft, still write files, but mark them via the document header:
   - Set `status: DRAFT` in YAML frontmatter.
   - Do NOT add any text before the leading `---` (keeps frontmatter valid).
@@ -35,7 +35,7 @@ description: >-
 
 ## Outputs
 
-- A spec folder under `specs/<YYYY-MM-DD>-<slug>/`.
+- A spec folder under `specs/YYYY-MM-DD-slug/`.
 - Quick mode required output:
   - `00_problem.md`
   - `01_requirements.md`
@@ -52,17 +52,17 @@ description: >-
 
 ## Conventions
 
-- Spec folder: `specs/<YYYY-MM-DD>-<slug>/` (slug = kebab-case, short and specific).
+- Spec folder: `specs/YYYY-MM-DD-slug/` (slug = kebab-case, short and specific).
 
 ### Document header rules
 
 - Every spec file MUST start with YAML frontmatter (`---` ... `---`).
 - Fill these fields in every produced file:
-  - `spec_date`: `<YYYY-MM-DD>` (real date)
-  - `slug`: `<slug>` (real slug)
+  - `spec_date`: real date like `2026-01-31` (templates use `null`)
+  - `slug`: real slug like `payment-webhook-retry` (templates use `null`)
   - `mode`: `Quick` or `Full` (match selected mode)
   - `status`: `DRAFT` or `READY`
-  - `owners`: at least one owner/team if known, else keep placeholder
+  - `owners`: `[]` allowed only in DRAFT; add at least one owner before READY
 - Links MUST NOT point to non-existent files:
   - Use `null` when a doc is not produced (e.g., `links.design: null` in Quick mode).
   - If you later produce the doc, update links in the other spec docs immediately.
@@ -73,6 +73,7 @@ description: >-
 - Format: lowercase, kebab-case, no punctuation.
 - Remove filler words (a/an/the/of/for/and, etc.).
 - Max length: 40 characters.
+- Example: `add-user-login`.
 
 ### IDs and traceability
 
@@ -87,7 +88,8 @@ description: >-
 
 ## Quality bar
 
-- Requirements must be verifiable (acceptance criteria / measurable targets).
+- Requirements must be verifiable (acceptance criteria / measurable targets, e.g., p95 latency <=
+  200 ms).
 - Design must cover: flows, data, contracts, failure modes, observability, security.
 - Task plan must be ordered, small, independently verifiable, and traceable.
 
@@ -119,13 +121,14 @@ Skip:
 
 ### Full mode
 
-Use when any of the "Skip" triggers above apply. Produce all 5 files.
+Use when any of the "Skip" triggers above apply. Produce all 5 files. If unsure, default to Quick
+during scaffolding and re-evaluate after clarifying questions.
 
 ## Steps
 
-0. Scaffold first (must happen before writing content):
-   - Derive `<YYYY-MM-DD>` and `<slug>` using "Slug rules".
-   - Create `specs/<YYYY-MM-DD>-<slug>/` if missing.
+1. Scaffold first (must happen before writing content):
+   - Derive `YYYY-MM-DD` and `slug` using "Slug rules".
+   - Create `specs/YYYY-MM-DD-slug/` if missing.
    - Create required Quick-mode files by copying templates (not empty files):
      - `00_problem.md` from `assets/00_problem_template.md`
      - `01_requirements.md` from `assets/01_requirements_template.md`
@@ -133,10 +136,11 @@ Use when any of the "Skip" triggers above apply. Produce all 5 files.
    - Populate document headers (`spec_date`, `slug`, `mode`, `status`) immediately.
      - Default `mode: Quick` and `status: DRAFT` during scaffolding (safe defaults).
      - After mode is decided, update `mode` (and `links`) across all produced files to match.
-1. Ask the minimum clarifying questions needed to fill gaps (goal/value, scope, constraints,
+2. Ask the minimum clarifying questions needed to fill gaps (goal/value, scope, constraints,
    acceptance criteria, integrations, NFRs). If answers are missing, state assumptions explicitly.
-2. Decide mode (Quick or Full) using the triggers under "Modes" and record the decision and
-   rationale in `03_tasks.md` (or `00_problem.md` if you prefer).
+   - If mode is unclear, keep `mode: Quick` from scaffolding and confirm after these questions.
+3. Decide mode (Quick or Full) using the triggers under "Modes" and record the decision and
+   rationale in `03_tasks.md` under "Mode decision".
    - After deciding mode:
      - Update YAML frontmatter `mode` in every already-produced spec file to match (Quick/Full).
      - If switching to Full:
@@ -144,23 +148,27 @@ Use when any of the "Skip" triggers above apply. Produce all 5 files.
        - Create `04_test_plan.md` from template and set `links.test_plan` to `04_test_plan.md`.
        - After creating new docs, immediately update their YAML frontmatter fields (`spec_date`,
          `slug`, `mode`, `status`, and `links`) to match the selected mode.
-       - Update links in `00_problem.md`, `01_requirements.md`, `03_tasks.md`:
+       - Update links in `00_problem.md`, `01_requirements.md`, `03_tasks.md`, and
+         `04_test_plan.md`:
          - `links.design: 02_design.md`
-         - `links.test_plan: 04_test_plan.md`
+         - `links.test_plan: 04_test_plan.md` (in `00_problem.md`, `01_requirements.md`,
+           `03_tasks.md`)
      - If staying Quick:
        - Keep `links.design: null`.
-       - If you decide to produce `04_test_plan.md`, create it and set `links.test_plan` in all
-         produced docs.
-3. Fill `00_problem.md` from `assets/00_problem_template.md` with concrete context, goals,
+       - If you decide to produce `04_test_plan.md`, create it and set `links.test_plan` in
+         `00_problem.md`, `01_requirements.md`, and `03_tasks.md`.
+       - Keep `links.design: null` in `04_test_plan.md` for Quick mode.
+4. Fill `00_problem.md` from `assets/00_problem_template.md` with concrete context, goals,
    non-goals, and success metrics.
-4. Fill `01_requirements.md` from `assets/01_requirements_template.md`. Ensure every functional
+5. Fill `01_requirements.md` from `assets/01_requirements_template.md`. Ensure every functional
    requirement has acceptance criteria and NFRs are measurable.
-5. If Full mode (or any "Skip" triggers apply):
+6. If Full mode (or any "Skip" triggers apply):
    - Ensure `02_design.md` exists (create if missing), then fill it from
      `assets/02_design_template.md`.
-6. Fill `03_tasks.md` from `assets/03_tasks_template.md`. Order tasks, make each independently
-   verifiable, and link tasks back to requirements.
-7. If producing `04_test_plan.md`:
+7. Fill `03_tasks.md` from `assets/03_tasks_template.md`. Order tasks, make each independently
+   verifiable, and link tasks back to requirements. Keep task validation steps even when a separate
+   test plan exists.
+8. If producing `04_test_plan.md`:
    - In Full mode: MUST produce `04_test_plan.md`.
    - In Quick mode: OPTIONAL (recommended) to produce `04_test_plan.md`.
    - Ensure `04_test_plan.md` exists (create if missing), then fill it from
@@ -169,28 +177,34 @@ Use when any of the "Skip" triggers above apply. Produce all 5 files.
    - If produced:
      - Set `links.test_plan: 04_test_plan.md` in `00_problem.md`, `01_requirements.md`,
        `03_tasks.md`.
-8. Provide a readiness checklist. Do not change code until the spec package exists. If the user
+     - If Full mode, set `links.design: 02_design.md` in `04_test_plan.md`.
+9. Provide a readiness checklist. Do not change code until the spec package exists. If the user
    requests immediate coding, produce a minimal spec package first and proceed with explicit,
    labeled assumptions (do not invent integrations/constraints silently).
-9. If the Ready-to-code checklist is satisfied:
-   - Before setting `READY`, run the spec-lint checks below and ensure they pass.
-   - Update `status: READY` in the YAML frontmatter of every produced spec file in the folder (keep
-     statuses consistent across docs).
+10. If the Ready-to-code checklist is satisfied:
+    - Before setting `READY`, run the spec-lint checks below and ensure they pass.
+    - Update `status: READY` in the YAML frontmatter of every produced spec file in the folder (keep
+      statuses consistent across docs).
 
 ## Spec-lint (recommended)
 
 Run these checks against the spec folder before marking `status: READY`.
 
 ```bash
-# Replace <SPEC_DIR> with specs/<YYYY-MM-DD>-<slug>
-SPEC_DIR="<SPEC_DIR>"
+# Set SPEC_DIR to your spec folder, e.g. specs/2026-01-31-example-slug.
+# You can also export SPEC_DIR before running this script.
+SPEC_DIR="${SPEC_DIR:-specs/YYYY-MM-DD-slug}"
 
 set -euo pipefail
 fail() { echo "❌ $1" >&2; exit 1; }
 
 # 1) Header placeholders must be gone before READY
-if rg -n "<YYYY-MM-DD>|<slug>|<name-or-team>" "$SPEC_DIR"; then
-  fail "header placeholders remain"
+# We use YAML-friendly placeholders in templates:
+#   spec_date: null
+#   slug: null
+#   owners: []
+if rg -n "^\\s*spec_date:\\s*null\\s*$|^\\s*slug:\\s*null\\s*$|^\\s*owners:\\s*\\[\\]\\s*$" "$SPEC_DIR"; then
+  fail "header placeholders remain (spec_date/slug/owners)"
 fi
 
 # 2) Traceability placeholders must be gone
@@ -241,28 +255,32 @@ fi
 
 ### Quick mode checklist
 
-- [ ] `specs/<YYYY-MM-DD>-<slug>/` exists and contains `00_problem.md`, `01_requirements.md`,
+- [ ] `specs/YYYY-MM-DD-slug/` exists and contains `00_problem.md`, `01_requirements.md`,
       `03_tasks.md`
-- [ ] Document headers are filled (`spec_date`, `slug`, `mode`, `status`) with real values (no
-      `<...>` placeholders)
-- [ ] Mode decision and rationale is recorded (and why `02_design.md` is skipped)
+- [ ] Document headers are filled (`spec_date`, `slug`, `mode`, `status`, `owners`) with real values
+      (no `null`/`[]` placeholders)
+- [ ] `owners` includes at least one owner or team
+- [ ] Mode decision and rationale is recorded in `03_tasks.md`
 - [ ] Every `FR-XXX` has acceptance criteria
 - [ ] Every `NFR-XXX` is measurable (targets, limits, SLO-like) if applicable
 - [ ] Every `T-XXX` links to `FR/NFR` IDs
 - [ ] If `04_test_plan.md` is skipped, `03_tasks.md` includes explicit validation steps per task
+- [ ] All YAML links are valid (either `null` or pointing to existing files)
 - [ ] Spec-lint checks pass
 - [ ] Set `status: READY` across produced docs (keep statuses consistent)
 
 ### Full mode checklist
 
-- [ ] `specs/<YYYY-MM-DD>-<slug>/` exists and contains all 5 files
-- [ ] Document headers are filled (`spec_date`, `slug`, `mode`, `status`) with real values (no
-      `<...>` placeholders)
+- [ ] `specs/YYYY-MM-DD-slug/` exists and contains all 5 files
+- [ ] Document headers are filled (`spec_date`, `slug`, `mode`, `status`, `owners`) with real values
+      (no `null`/`[]` placeholders)
+- [ ] `owners` includes at least one owner or team
 - [ ] Every `FR-XXX` has acceptance criteria
 - [ ] Every `NFR-XXX` is measurable (targets, limits, SLO-like)
 - [ ] Design covers flows, data, contracts, failure modes, observability, security
 - [ ] Every `T-XXX` links to `FR/NFR` IDs
 - [ ] Every `TC-XXX` links to `FR/NFR` IDs
+- [ ] All YAML links are valid (either `null` or pointing to existing files)
 - [ ] Spec-lint checks pass
 - [ ] Set `status: READY` across all docs (keep statuses consistent)
 

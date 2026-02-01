@@ -1,4 +1,4 @@
-# docker-compose.<env>.yml (overrides)
+# `docker-compose.<env>.yml` (overrides)
 
 ```yaml
 # docker-compose.prod.yml

@@ -10,7 +10,7 @@ This repo hosts shareable Codex skills you can reuse across projects.
 
 ## Install in Codex
 
-```
+```bash
 $skill-installer install --repo po-sen/skills --path skills/<skill> --ref master
 ```
 
@@ -37,7 +37,7 @@ make clean-skills
 
 ## Skill Structure
 
-```
+```text
 skills/<skill-name>/
   SKILL.md
   references/   (optional)

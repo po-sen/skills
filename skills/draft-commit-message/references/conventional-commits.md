@@ -1,6 +1,6 @@
 # Conventional Commits v1.0.0 Reference
 
-Spec (authoritative): https://www.conventionalcommits.org/en/v1.0.0/
+Spec (authoritative): <https://www.conventionalcommits.org/en/v1.0.0/>
 
 Key points to apply:
 

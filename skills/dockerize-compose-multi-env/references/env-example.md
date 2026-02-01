@@ -1,6 +1,6 @@
 # .env.example (baseline)
 
-```
+```dotenv
 # Common
 APP_ENV=production
 API_PORT=8000

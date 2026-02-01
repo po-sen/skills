@@ -1,6 +1,6 @@
 # .dockerignore baseline
 
-```
+```text
 .git/
 .env
 .env.*

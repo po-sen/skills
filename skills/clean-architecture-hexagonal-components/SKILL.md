@@ -73,7 +73,7 @@ boundaries. Components (bounded contexts) are optional for small projects.
 Default structure (components optional for small projects; adjust layout to fit your language's
 conventions):
 
-```
+```text
 shared_kernel/
   domain/
     events/
@@ -118,7 +118,7 @@ bootstrap/
 Single-module structure (when components are not used; adjust layout to fit your language's
 conventions):
 
-```
+```text
 domain/
   entities/
   value_objects/

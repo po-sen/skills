@@ -1,11 +1,10 @@
 ---
 doc: 01_requirements
-spec_date: <YYYY-MM-DD>
-slug: <slug>
+spec_date: null # set to YYYY-MM-DD
+slug: null # set to kebab-case slug
 mode: Quick
 status: DRAFT
-owners:
-  - <name-or-team>
+owners: [] # add at least one before READY
 links:
   problem: 00_problem.md
   tasks: 03_tasks.md
@@ -27,7 +26,7 @@ links:
 
 ## Functional requirements
 
-### FR-001 - <title>
+### FR-001 - title
 
 - Description:
 - Acceptance criteria:
@@ -35,7 +34,7 @@ links:
   - [ ] AC2
 - Notes:
 
-### FR-002 - <title>
+### FR-002 - title
 
 - Description:
 - Acceptance criteria:

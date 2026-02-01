@@ -1,11 +1,10 @@
 ---
 doc: 02_design
-spec_date: <YYYY-MM-DD>
-slug: <slug>
+spec_date: null # set to YYYY-MM-DD
+slug: null # set to kebab-case slug
 mode: Full
 status: DRAFT
-owners:
-  - <name-or-team>
+owners: [] # add at least one before READY
 links:
   problem: 00_problem.md
   requirements: 01_requirements.md

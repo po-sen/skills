@@ -1,16 +1,15 @@
 ---
 doc: 04_test_plan
-spec_date: <YYYY-MM-DD>
-slug: <slug>
+spec_date: null # set to YYYY-MM-DD
+slug: null # set to kebab-case slug
 mode: Quick
 status: DRAFT
-owners:
-  - <name-or-team>
+owners: [] # add at least one before READY
 links:
   problem: 00_problem.md
   requirements: 01_requirements.md
   tasks: 03_tasks.md
-  design: null # set to 02_design.md in Full mode (or omit)
+  design: null # set to 02_design.md in Full mode
 ---
 
 # Test Plan
