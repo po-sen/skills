@@ -1,20 +1,19 @@
 ---
 name: draft-commit-message
 description: |
-  Generate a Conventional Commits message when the user asks for a commit message or a
-  Conventional Commits format. Transform a change summary (and/or staged diff) into a compliant
-  `type(scope): summary` line and optional body/footer, including BREAKING CHANGE details when
-  applicable.
-  Only run `git commit` when the user explicitly asks to commit (e.g., "commit this", "run git commit").
+  Generate a Conventional Commits message from the current working tree and commit by default.
+  Stage all changes, infer type/scope from the diff, produce a compliant header with optional
+  body/footer, and run git commit. Use draft-only mode only when the user explicitly asks for a
+  message without committing.
 ---
 
 # Draft Commit Message
 
 ## Purpose
 
-- Draft a Conventional Commits message from a user-provided change summary.
-- Commit the staged changes using the drafted message only when explicitly requested.
-- Enforce format rules and best practices for clarity and consistency.
+- Draft a Conventional Commits message from the current working tree.
+- Default to staging all changes and committing with the drafted message.
+- Keep message generation rules separate from git execution steps for clarity.
 
 ## When to Use
 
@@ -22,65 +21,128 @@ description: |
 
 ## Inputs
 
-- Change summary (required unless it can be inferred from the staged diff).
-- Explicit request to commit (required to perform `git commit`).
-- Staging intent if the user wants to commit and there are no staged changes (required when needed).
-- Optional: preferred type, scope, breaking-change details, ticket/issue references, extra context
-  for a body.
+- Optional change summary or constraints provided by the user.
+- Repo state and diffs (when available).
+- Optional: preferred type, scope, breaking-change details, references, or test notes.
 
 ## Outputs
 
 - Conventional commit message with a single-line header.
-- Optional body and footer when needed (for context or breaking changes).
-- Draft-only: return only the commit message.
-- Commit mode: show the commit message first, then run `git commit` and report the new commit hash
-  on success.
+- Optional body and footer when they add value.
+- Draft-only mode: return only the commit message.
+- Default mode: stage all changes, show the final message, run `git commit`, and report the new
+  commit hash on success.
 
 ## Steps
 
-0. Determine intent: draft-only vs. draft-and-commit.
-   - If the user did not explicitly ask to commit, do not run `git commit`.
-   - If draft-only and the user provided a clear change summary, draft the message without running
-     git commands unless diff inspection is needed. Skip Step 1 and proceed to Steps 4 to 10.
-1. If repo context is needed (commit mode or diff inspection), check staging state:
-   - `git status --porcelain`
-   - `git diff --cached --stat`
-   - When inferring type/scope, inspect content with `git diff --cached`.
-   - If both staged and unstaged changes exist:
-     - If the user wants to commit, ask whether to commit only staged changes or to stage additional
-       changes first (then proceed to Step 2).
-     - Otherwise, remind the user that only staged changes would be committed.
-   - If git commands fail (e.g., not a git repo), fall back to drafting from the user-provided
-     summary and ask for minimal missing context. Do not attempt to commit in this case.
-2. If the user wants to commit and nothing is staged, ask whether to stage all changes
-   (`git add -A`), interactively select hunks (`git add -p`), or stage specific paths
-   (`git add <paths...>`); do not proceed until there are staged changes.
-3. Ask only for missing essentials that cannot be inferred from staged diff or user text: change
-   summary and whether the change is breaking. Type/scope are optional and may be inferred.
-4. Choose a type that matches the change: feat, fix, docs, style, refactor, perf, test, build, ci,
-   chore, revert.
-5. Decide whether a scope adds clarity; keep scope lowercase, short, and consistent with module or
-   domain names.
-6. Write an imperative summary under 72 characters; avoid trailing periods.
-7. Compose the header as `type(scope): summary` or `type: summary` if no scope.
-8. If the change is breaking, add `!` after the type or scope and include a
-   `BREAKING CHANGE: <what changed> <how to migrate>` footer.
-9. Add a body only when it adds value (rationale, notable behavior changes, migration notes);
-   separate sections with blank lines.
-10. Generate the full commit message and show it to the user.
-11. If the user asked to commit, write the message to a temp file (e.g., via `mktemp`) and commit
-    with `git commit -F <tmpfile>`. Clean up the temp file afterward (best effort).
-12. If the commit succeeds, report the new short commit hash and the final commit message.
-13. If the commit fails (e.g., hooks), return the final commit message and the error summary; do not
-    retry blindly.
-14. If the user did not ask to commit, return only the final commit message.
+### 1) Mode Selection
+
+- Commit mode (default): stage all changes and run `git commit`.
+- Draft-only mode: only when the user explicitly asks for message-only output (e.g., "draft only",
+  "message only", "no commit", "message only please").
+
+### 2) Commit Message Spec
+
+#### Header
+
+- Format: `type(scope): summary` or `type: summary`
+- Imperative mood; no trailing period
+- Header length (including type/scope): <= 72 characters
+
+#### Body (optional, recommended when needed)
+
+Body is optional. Include it only when rationale is needed, risk is higher, behavior changes, or the
+diff is non-obvious.
+
+Non-trivial examples: public API change, business logic change, data schema/migration, auth/payment,
+error handling, concurrency.
+
+- Default body: prefer a short Why (1-3 lines).
+- Include Tests only when tests were run or risk is higher / behavior changes (feat/fix/perf, or any
+  change that alters externally observable behavior).
+- If tests were not run and that needs to be stated, use: `Tests: not run (reason)`.
+- Include What only when the diff is non-obvious or spans multiple areas (for example: `- api: ...`,
+  `- ci: ...`).
+- Include Impact only when there is behavior change, compatibility/migration concerns, or likely
+  pitfalls (1-3 lines).
+
+Line wrapping: wrap body lines at ~72 characters when practical.
+
+#### Footer
+
+- Breaking changes:
+  - Add `!` in header (`type(scope)!: summary` or `type!: summary`)
+  - Add `BREAKING CHANGE: <what changed> <how to migrate>`
+- References: keep in footer unless user requests otherwise.
+
+### 3) Inference Rules
+
+#### Type (priority heuristics)
+
+1. docs-only -> `docs`
+2. test-only -> `test`
+3. ci/workflows -> `ci`
+4. build/deps/tooling -> `build`
+5. perf-only or clear performance improvement -> `perf`
+6. formatting-only or lint-only -> `style`
+7. behavior change: new -> `feat`, bug fix -> `fix`
+8. no behavior change -> `refactor`
+9. explicit revert request -> `revert`
+10. otherwise -> `chore`
+
+If reverting, use header `revert: <original summary>` and include `This reverts commit <hash>.` in
+the body when the hash is available.
+
+#### Scope
+
+- Use the smallest meaningful scope (lowercase).
+- Keep scope length <= 16 characters; if longer, omit scope.
+- If spanning many areas, omit scope or use `repo` and list key areas in the body.
+- If mixed changes clearly include multiple areas, still commit by default but summarize the
+  sections in the body (for example: `- api: ...`, `- ci: ...`, `- docs: ...`).
+
+#### Breaking change
+
+- Likely breaking if public APIs, routes, config contracts, or schemas change.
+- If unclear, ask only: "Is this a breaking change?"
+
+#### Untracked files
+
+- If untracked files exist:
+  - If <= 10: list them in Body "What"
+  - If > 10: summarize count and list the first 10
+
+#### Body inclusion heuristics
+
+- This section clarifies the Body rules above; if conflicts arise, follow Commit Message Spec.
+- `feat` / `fix` / `perf`: usually add Why; add Tests when run or risk is higher.
+- `refactor`: add Why/Impact only when diff is non-obvious or risk is higher.
+- `docs` / `style` / `ci` / `build` / `test`: usually no body; if needed, add only
+  `Tests: not run (reason)` or a 1-line Why.
+
+### 4) Execution Steps
+
+1. `git rev-parse --is-inside-work-tree`
+2. If not a repo: draft from user summary; do not commit.
+3. `git status --porcelain`
+4. If no changes: report "nothing to commit" and stop.
+5. If unmerged paths exist (`git diff --name-only --diff-filter=U`): stop and ask to resolve
+   conflicts before committing.
+6. Commit mode:
+   - `git add -A`
+   - Inspect: `git --no-pager diff --cached --stat` and `git --no-pager diff --cached`
+7. Draft-only mode:
+   - Inspect: `git --no-pager diff --stat` and `git --no-pager diff`
+8. Generate final message and show it to the user.
+9. Commit (commit mode):
+   - Use `mktemp`, write message, run `git commit -F <tmpfile>`
+   - Clean up temp file (best effort)
+10. On success: report short hash and final message.
+11. On failure: return message and error summary; do not retry blindly.
 
 ## Notes
 
-- Prefer the smallest scope that still adds clarity.
-- Do not invent details; ask clarifying questions if the summary is ambiguous.
-- Keep issue IDs in the body or footer unless the user requests them in the summary.
-- Do not commit unless explicitly requested, and do not commit if there are no staged changes.
-- Do not run `git add` unless the user explicitly requested staging.
-- Use `revert:` only when reverting a known prior commit and the user explicitly requested a revert.
+- Do not invent details; ask for missing essentials only when inference is unclear.
+- Prefer consistency in type/scope naming across the repo.
+- Default to staging all changes and committing without extra confirmation.
 - Reference `references/conventional-commits.md` for the v1.0.0 spec.
