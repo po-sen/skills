@@ -12,9 +12,7 @@ SKILL_PATHS := \
 	skills/clean-architecture-hexagonal-components \
 	skills/dockerize-compose-multi-env \
 	skills/draft-commit-message \
-	skills/enforce-architecture-boundaries \
-	skills/sdd-spec \
-	skills/setup-lint-format
+	skills/sdd-spec
 SKILL_NAMES := $(notdir $(SKILL_PATHS))
 
 install-skills:
