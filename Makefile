@@ -9,7 +9,7 @@ SKILL_PATHS := \
 	skills/clean-architecture-hexagonal-components \
 	skills/dockerize-compose-multi-env \
 	skills/conventional-commit \
-	skills/sdd-spec
+	skills/spec-driven-development
 SKILL_NAMES := $(notdir $(SKILL_PATHS))
 
 install-skills:

@@ -1,12 +1,12 @@
 ---
-name: sdd-spec
+name: spec-driven-development
 description: >-
   Convert rough ideas into Spec-Driven Development artifacts: problem statement, requirements,
   design, task plan, and test plan. Use when the user asks for SDD/specs, to clarify requirements,
   or to turn a rough idea into an implementable plan before coding.
 ---
 
-# sdd-spec
+# spec-driven-development
 
 ## Purpose
 
