@@ -63,7 +63,13 @@ description: >-
   - `mode`: `Quick` or `Full` (match selected mode)
   - `status`: `DRAFT`, `READY`, or `DONE`
   - `owners`: `[]` allowed only in DRAFT; add at least one owner before READY/DONE
+  - `depends_on`: `[]` or a list of prerequisite spec folder names (`YYYY-MM-DD-slug`) that must be
+    `DONE` before this spec can become `READY`
+  - Keep `spec_date`, `slug`, `mode`, `status`, and `depends_on` consistent across docs in the same
+    spec folder.
 - Links MUST NOT point to non-existent files:
+  - Keep a consistent key set in all docs: `problem`, `requirements`, `design`, `tasks`,
+    `test_plan`.
   - Use `null` when a doc is not produced (e.g., `links.design: null` in Quick mode).
   - If you later produce the doc, update links in the other spec docs immediately.
 
@@ -72,6 +78,31 @@ description: >-
 - `DRAFT`: spec is being prepared; placeholders or open questions may remain.
 - `READY`: spec is complete, spec-lint passes, and implementation can start.
 - `DONE`: implementation and validation are complete, and the spec reflects final behavior/scope.
+
+### Cross-spec dependencies
+
+- Use `depends_on` to declare prerequisite specs for this spec.
+- Format:
+
+  - No prerequisites: `depends_on: []`
+  - With prerequisites:
+
+    ```yaml
+    depends_on:
+      - 2026-01-20-auth-foundation
+      - 2026-01-25-shared-api-contract
+    ```
+
+  - Non-empty inline list form is not supported: do not use `depends_on: [a, b]`.
+
+- Dependency gate:
+  - Before setting this spec to `READY`, every `depends_on` entry must resolve to an existing folder
+    under `specs/` and that folder must be folder-wide `status: DONE`.
+  - `depends_on` must not include the current spec's own slug.
+- Source of truth:
+  - `00_problem.md` is canonical for dependency gate checks.
+  - Keep `depends_on` aligned across all spec docs in the same folder to avoid drift.
+  - Dependency order follows `00_problem.md`; other docs must match the same order.
 
 ### Slug rules
 
@@ -139,11 +170,13 @@ during scaffolding and re-evaluate after clarifying questions.
      - `00_problem.md` from `assets/00_problem_template.md`
      - `01_requirements.md` from `assets/01_requirements_template.md`
      - `03_tasks.md` from `assets/03_tasks_template.md`
-   - Populate document headers (`spec_date`, `slug`, `mode`, `status`) immediately.
+   - Populate document headers (`spec_date`, `slug`, `mode`, `status`, `owners`, `depends_on`)
+     immediately.
      - Default `mode: Quick` and `status: DRAFT` during scaffolding (safe defaults).
      - After mode is decided, update `mode` (and `links`) across all produced files to match.
 2. Ask the minimum clarifying questions needed to fill gaps (goal/value, scope, constraints,
-   acceptance criteria, integrations, NFRs). If answers are missing, state assumptions explicitly.
+   acceptance criteria, integrations, NFRs, and upstream spec dependencies). If answers are missing,
+   state assumptions explicitly.
    - If mode is unclear, keep `mode: Quick` from scaffolding and confirm after these questions.
 3. Decide mode (Quick or Full) using the triggers under "Modes" and record the decision and
    rationale in `03_tasks.md` under "Mode decision".
@@ -189,6 +222,8 @@ during scaffolding and re-evaluate after clarifying questions.
    labeled assumptions (do not invent integrations/constraints silently).
 10. If the Ready-to-code checklist is satisfied:
     - Before setting `READY`, run the spec-lint checks below and ensure they pass.
+    - If `depends_on` is non-empty, every dependency must already be `DONE`; otherwise keep this
+      spec in `DRAFT`.
     - Update `status: READY` in the YAML frontmatter of every produced spec file in the folder (keep
       statuses consistent across docs).
 11. After implementation and validation tied to the spec are complete:
@@ -197,76 +232,15 @@ during scaffolding and re-evaluate after clarifying questions.
 
 ## Spec-lint (recommended)
 
-Run these checks against the spec folder before marking `status: READY` or `status: DONE`.
+Run these checks against the spec folder before marking `status: READY` or `status: DONE`. The
+canonical lint implementation is `scripts/spec-lint.sh`.
 
 ```bash
-# Set SPEC_DIR to your spec folder, e.g. specs/2026-01-31-example-slug.
-# You can also export SPEC_DIR before running this script.
-SPEC_DIR="${SPEC_DIR:-specs/YYYY-MM-DD-slug}"
+# From repo root:
+SPEC_DIR="specs/YYYY-MM-DD-slug" bash skills/spec-driven-development/scripts/spec-lint.sh
 
-set -euo pipefail
-fail() { echo "❌ $1" >&2; exit 1; }
-
-# 1) Header placeholders must be gone before READY/DONE
-# We use YAML-friendly placeholders in templates:
-#   spec_date: null
-#   slug: null
-#   owners: []
-if rg -n "^\\s*spec_date:\\s*null\\s*$|^\\s*slug:\\s*null\\s*$|^\\s*owners:\\s*\\[\\]\\s*$" "$SPEC_DIR"; then
-  fail "header placeholders remain (spec_date/slug/owners)"
-fi
-
-# 2) Traceability placeholders must be gone
-if rg -n "FR-\\?\\?\\?|NFR-\\?\\?\\?|T-\\?\\?\\?|TC-\\?\\?\\?" "$SPEC_DIR"; then
-  fail "traceability placeholders remain"
-fi
-
-# 3) Required link integrity (no dangling links)
-if rg -n "^\\s*design:\\s*02_design\\.md\\s*$" "$SPEC_DIR" >/dev/null; then
-  test -f "$SPEC_DIR/02_design.md" || fail "links.design points to missing 02_design.md"
-fi
-if rg -n "^\\s*test_plan:\\s*04_test_plan\\.md\\s*$" "$SPEC_DIR" >/dev/null; then
-  test -f "$SPEC_DIR/04_test_plan.md" || fail "links.test_plan points to missing 04_test_plan.md"
-fi
-
-# 4) Mode consistency (no mixed Quick/Full in the same spec folder)
-HAS_QUICK=0
-HAS_FULL=0
-if rg -n "^mode:\\s*Quick\\s*$" "$SPEC_DIR" >/dev/null; then HAS_QUICK=1; fi
-if rg -n "^mode:\\s*Full\\s*$" "$SPEC_DIR" >/dev/null; then HAS_FULL=1; fi
-if [ "$HAS_QUICK" -eq 1 ] && [ "$HAS_FULL" -eq 1 ]; then
-  fail "mode mismatch: both Quick and Full exist in the same spec folder"
-fi
-
-# 5) Full mode completeness + link sanity
-if [ "$HAS_FULL" -eq 1 ]; then
-  test -f "$SPEC_DIR/02_design.md" || fail "Full mode requires 02_design.md"
-  test -f "$SPEC_DIR/04_test_plan.md" || fail "Full mode requires 04_test_plan.md"
-  if rg -n "^\\s*design:\\s*null\\s*$" "$SPEC_DIR"; then
-    fail "Full mode must not have links.design: null"
-  fi
-  if rg -n "^\\s*test_plan:\\s*null\\s*$" "$SPEC_DIR"; then
-    fail "Full mode must not have links.test_plan: null"
-  fi
-fi
-
-# 6) Status validity and consistency (single status across a spec folder)
-HAS_DRAFT=0
-HAS_READY=0
-HAS_DONE=0
-if rg -n "^status:\\s*READY\\s*$" "$SPEC_DIR" >/dev/null; then HAS_READY=1; fi
-if rg -n "^status:\\s*DRAFT\\s*$" "$SPEC_DIR" >/dev/null; then HAS_DRAFT=1; fi
-if rg -n "^status:\\s*" "$SPEC_DIR" | rg -v "^.*status:\\s*(DRAFT|READY|DONE)\\s*$"; then
-  fail "unsupported status value found (use DRAFT/READY/DONE)"
-fi
-if rg -n "^status:\\s*DONE\\s*$" "$SPEC_DIR" >/dev/null; then HAS_DONE=1; fi
-STATUS_COUNT=$((HAS_DRAFT + HAS_READY + HAS_DONE))
-if [ "$STATUS_COUNT" -eq 0 ]; then
-  fail "no status field found"
-fi
-if [ "$STATUS_COUNT" -gt 1 ]; then
-  fail "status mismatch: mixed statuses found (must be all DRAFT, READY, or DONE)"
-fi
+# Or from the skill directory:
+SPEC_DIR="specs/YYYY-MM-DD-slug" bash scripts/spec-lint.sh
 ```
 
 ## Ready-to-code checklist
@@ -275,14 +249,21 @@ fi
 
 - [ ] `specs/YYYY-MM-DD-slug/` exists and contains `00_problem.md`, `01_requirements.md`,
       `03_tasks.md`
-- [ ] Document headers are filled (`spec_date`, `slug`, `mode`, `status`, `owners`) with real values
-      (no `null`/`[]` placeholders)
+- [ ] Document headers are filled (`spec_date`, `slug`, `mode`, `status`, `owners`, `depends_on`)
+      with real values (no `null`/`[]` placeholders except `depends_on: []` when no prerequisites)
 - [ ] `owners` includes at least one owner or team
+- [ ] Every `depends_on` entry points to an existing `specs/YYYY-MM-DD-slug/` folder and each
+      dependency folder is `status: DONE`
+- [ ] Frontmatter values are consistent across docs (`spec_date`, `slug`, `mode`, `status`,
+      `depends_on`)
+- [ ] Every spec doc has the full `links` key set (`problem`, `requirements`, `design`, `tasks`,
+      `test_plan`)
 - [ ] Mode decision and rationale is recorded in `03_tasks.md`
 - [ ] Every `FR-XXX` has acceptance criteria
 - [ ] Every `NFR-XXX` is measurable (targets, limits, SLO-like) if applicable
 - [ ] Every `T-XXX` links to `FR/NFR` IDs
 - [ ] If `04_test_plan.md` is skipped, `03_tasks.md` includes explicit validation steps per task
+- [ ] In Quick mode, `links.design` remains `null`
 - [ ] All YAML links are valid (either `null` or pointing to existing files)
 - [ ] Spec-lint checks pass
 - [ ] Set `status: READY` across produced docs (keep statuses consistent)
@@ -290,9 +271,15 @@ fi
 ### Full mode checklist
 
 - [ ] `specs/YYYY-MM-DD-slug/` exists and contains all 5 files
-- [ ] Document headers are filled (`spec_date`, `slug`, `mode`, `status`, `owners`) with real values
-      (no `null`/`[]` placeholders)
+- [ ] Document headers are filled (`spec_date`, `slug`, `mode`, `status`, `owners`, `depends_on`)
+      with real values (no `null`/`[]` placeholders except `depends_on: []` when no prerequisites)
 - [ ] `owners` includes at least one owner or team
+- [ ] Every `depends_on` entry points to an existing `specs/YYYY-MM-DD-slug/` folder and each
+      dependency folder is `status: DONE`
+- [ ] Frontmatter values are consistent across docs (`spec_date`, `slug`, `mode`, `status`,
+      `depends_on`)
+- [ ] Every spec doc has the full `links` key set (`problem`, `requirements`, `design`, `tasks`,
+      `test_plan`)
 - [ ] Every `FR-XXX` has acceptance criteria
 - [ ] Every `NFR-XXX` is measurable (targets, limits, SLO-like)
 - [ ] Design covers flows, data, contracts, failure modes, observability, security
@@ -314,6 +301,7 @@ fi
 - Treat the spec as the source of truth; update the spec before changing code.
 - Keep templates minimal. Adapt to existing repo conventions (ADR/RFC/docs) but preserve the section
   structure.
+- Example spec package (Full mode): `examples/specs/2026-02-06-lint-pass-example/`.
 - Avoid inventing integrations or requirements. Ask or mark as assumptions.
 - Prefer concise, testable statements over narrative prose.
 - Use `DONE` only after implementation and validation are complete; otherwise keep `READY`.

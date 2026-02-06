@@ -1,15 +1,15 @@
 ---
 doc: 04_test_plan
-spec_date: null # set to YYYY-MM-DD
-slug: null # set to kebab-case slug
-mode: Quick
-status: DRAFT
-owners: [] # add at least one before READY/DONE
+spec_date: 2026-02-06 # set to YYYY-MM-DD
+slug: lint-pass-example # set to kebab-case slug
+mode: Full
+status: READY
+owners: [spec-team]
 depends_on: [] # list prerequisite spec folder names; use block list when non-empty
 links:
   problem: 00_problem.md
   requirements: 01_requirements.md
-  design: null # set to 02_design.md in Full mode
+  design: 02_design.md
   tasks: 03_tasks.md
   test_plan: 04_test_plan.md
 ---
@@ -26,18 +26,18 @@ links:
 ### Unit
 
 - TC-001:
-  - Linked requirements: FR-??? / NFR-???
+  - Linked requirements: FR-001 / NFR-001
   - Steps:
   - Expected:
 - TC-002:
-  - Linked requirements: FR-??? / NFR-???
+  - Linked requirements: FR-001 / NFR-001
   - Steps:
   - Expected:
 
 ### Integration
 
 - TC-101:
-  - Linked requirements: FR-??? / NFR-???
+  - Linked requirements: FR-001 / NFR-001
   - Steps:
   - Expected:
 

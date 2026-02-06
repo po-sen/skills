@@ -1,24 +1,24 @@
 ---
 doc: 03_tasks
-spec_date: null # set to YYYY-MM-DD
-slug: null # set to kebab-case slug
-mode: Quick
-status: DRAFT
-owners: [] # add at least one before READY/DONE
+spec_date: 2026-02-06 # set to YYYY-MM-DD
+slug: lint-pass-example # set to kebab-case slug
+mode: Full
+status: READY
+owners: [spec-team]
 depends_on: [] # list prerequisite spec folder names; use block list when non-empty
 links:
   problem: 00_problem.md
   requirements: 01_requirements.md
-  design: null # set to 02_design.md in Full mode
+  design: 02_design.md
   tasks: 03_tasks.md
-  test_plan: null # set to 04_test_plan.md if produced
+  test_plan: 04_test_plan.md
 ---
 
 # Task Plan
 
 ## Mode decision
 
-- Selected mode: Quick / Full
+- Selected mode: Full / Full
 - Rationale:
 - Upstream dependencies (`depends_on`): [] / list of `YYYY-MM-DD-slug`
 - Dependency gate before `READY`: every dependency is folder-wide `status: DONE`
@@ -38,7 +38,7 @@ links:
 1. T-001 - title
    - Scope:
    - Output:
-   - Linked requirements: FR-??? / NFR-???
+   - Linked requirements: FR-001 / NFR-001
    - Validation:
      - [ ] How to verify (manual steps or command):
      - [ ] Expected result:
@@ -46,7 +46,7 @@ links:
 2. T-002 - title
    - Scope:
    - Output:
-   - Linked requirements: FR-??? / NFR-???
+   - Linked requirements: FR-001 / NFR-001
    - Validation:
      - [ ] How to verify (manual steps or command):
      - [ ] Expected result:
