@@ -7,7 +7,6 @@ SKILL_REPO ?= po-sen/skills
 SKILL_REF ?= master
 SKILL_PATHS := \
 	skills/clean-architecture-hexagonal-components \
-	skills/dockerize-compose-multi-env \
 	skills/conventional-commit \
 	skills/spec-driven-development
 SKILL_NAMES := $(notdir $(SKILL_PATHS))
