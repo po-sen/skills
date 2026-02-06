@@ -4,7 +4,7 @@ spec_date: null # set to YYYY-MM-DD
 slug: null # set to kebab-case slug
 mode: Full
 status: DRAFT
-owners: [] # add at least one before READY
+owners: [] # add at least one before READY/DONE
 links:
   problem: 00_problem.md
   requirements: 01_requirements.md

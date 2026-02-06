@@ -61,11 +61,17 @@ description: >-
   - `spec_date`: real date like `2026-01-31` (templates use `null`)
   - `slug`: real slug like `payment-webhook-retry` (templates use `null`)
   - `mode`: `Quick` or `Full` (match selected mode)
-  - `status`: `DRAFT` or `READY`
-  - `owners`: `[]` allowed only in DRAFT; add at least one owner before READY
+  - `status`: `DRAFT`, `READY`, or `DONE`
+  - `owners`: `[]` allowed only in DRAFT; add at least one owner before READY/DONE
 - Links MUST NOT point to non-existent files:
   - Use `null` when a doc is not produced (e.g., `links.design: null` in Quick mode).
   - If you later produce the doc, update links in the other spec docs immediately.
+
+### Status lifecycle
+
+- `DRAFT`: spec is being prepared; placeholders or open questions may remain.
+- `READY`: spec is complete, spec-lint passes, and implementation can start.
+- `DONE`: implementation and validation are complete, and the spec reflects final behavior/scope.
 
 ### Slug rules
 
@@ -185,10 +191,13 @@ during scaffolding and re-evaluate after clarifying questions.
     - Before setting `READY`, run the spec-lint checks below and ensure they pass.
     - Update `status: READY` in the YAML frontmatter of every produced spec file in the folder (keep
       statuses consistent across docs).
+11. After implementation and validation tied to the spec are complete:
+    - Update `status: DONE` in the YAML frontmatter of every produced spec file in the folder (keep
+      statuses consistent across docs).
 
 ## Spec-lint (recommended)
 
-Run these checks against the spec folder before marking `status: READY`.
+Run these checks against the spec folder before marking `status: READY` or `status: DONE`.
 
 ```bash
 # Set SPEC_DIR to your spec folder, e.g. specs/2026-01-31-example-slug.
@@ -198,7 +207,7 @@ SPEC_DIR="${SPEC_DIR:-specs/YYYY-MM-DD-slug}"
 set -euo pipefail
 fail() { echo "❌ $1" >&2; exit 1; }
 
-# 1) Header placeholders must be gone before READY
+# 1) Header placeholders must be gone before READY/DONE
 # We use YAML-friendly placeholders in templates:
 #   spec_date: null
 #   slug: null
@@ -241,13 +250,22 @@ if [ "$HAS_FULL" -eq 1 ]; then
   fi
 fi
 
-# 6) Status consistency (no mixed READY/DRAFT in the same spec folder)
-HAS_READY=0
+# 6) Status validity and consistency (single status across a spec folder)
 HAS_DRAFT=0
+HAS_READY=0
+HAS_DONE=0
 if rg -n "^status:\\s*READY\\s*$" "$SPEC_DIR" >/dev/null; then HAS_READY=1; fi
 if rg -n "^status:\\s*DRAFT\\s*$" "$SPEC_DIR" >/dev/null; then HAS_DRAFT=1; fi
-if [ "$HAS_READY" -eq 1 ] && [ "$HAS_DRAFT" -eq 1 ]; then
-  fail "status mismatch: both READY and DRAFT exist in the same spec folder"
+if rg -n "^status:\\s*" "$SPEC_DIR" | rg -v "^.*status:\\s*(DRAFT|READY|DONE)\\s*$"; then
+  fail "unsupported status value found (use DRAFT/READY/DONE)"
+fi
+if rg -n "^status:\\s*DONE\\s*$" "$SPEC_DIR" >/dev/null; then HAS_DONE=1; fi
+STATUS_COUNT=$((HAS_DRAFT + HAS_READY + HAS_DONE))
+if [ "$STATUS_COUNT" -eq 0 ]; then
+  fail "no status field found"
+fi
+if [ "$STATUS_COUNT" -gt 1 ]; then
+  fail "status mismatch: mixed statuses found (must be all DRAFT, READY, or DONE)"
 fi
 ```
 
@@ -284,6 +302,13 @@ fi
 - [ ] Spec-lint checks pass
 - [ ] Set `status: READY` across all docs (keep statuses consistent)
 
+## Done checklist
+
+- [ ] Implementation tasks in `03_tasks.md` are complete
+- [ ] Validation evidence is recorded (tests/manual checks/metrics as applicable)
+- [ ] Spec docs reflect final behavior and scope (including any approved changes)
+- [ ] Set `status: DONE` across produced docs (keep statuses consistent)
+
 ## Notes
 
 - Treat the spec as the source of truth; update the spec before changing code.
@@ -291,3 +316,4 @@ fi
   structure.
 - Avoid inventing integrations or requirements. Ask or mark as assumptions.
 - Prefer concise, testable statements over narrative prose.
+- Use `DONE` only after implementation and validation are complete; otherwise keep `READY`.
