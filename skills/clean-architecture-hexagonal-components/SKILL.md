@@ -64,9 +64,51 @@ boundaries. Components (bounded contexts) are optional for small projects.
 11. Wire dependencies only in composition roots (`components/<name>/infrastructure/di` when
     components are used, otherwise the module-level DI area) and in the bootstrap entry point (e.g.,
     `bootstrap/main.*`).
-12. Add tests: domain unit tests, use case tests with mocked outbound ports, adapter
-    integration/contract tests.
+12. Add tests according to the Testing taxonomy below: unit (domain + use case with mocked outbound
+    ports), integration + contract (adapters), and functional tests for critical user flows.
 13. Verify dependency boundaries by checking imports; fix any violations before finalizing.
+
+## Testing taxonomy
+
+Use these definitions when planning and implementing Step 12.
+
+- Unit tests
+  - Definition: Verify a single domain rule or use-case orchestration path in isolation.
+  - Typical scope: `domain/**` entities, value objects, policies, domain services; application use
+    cases with mocked/fake outbound ports.
+  - Real DB: Not allowed.
+  - Placement: Near the layer under test (for example `domain/**` and `application/**` test files).
+  - Allowed dependencies: Same-layer code, `shared_kernel/` primitives, and test doubles only. No
+    adapter, infrastructure, or bootstrap dependencies.
+- Integration tests
+  - Definition: Verify collaboration across architectural boundaries (for example application port
+    to adapter to driver/real dependency).
+  - Typical scope: `adapters/outbound/**` implementations against real dependencies and
+    adapter-level contract tests at inbound/outbound boundaries.
+  - Real DB: Not required for contract tests; allowed and preferred for persistence-adapter
+    integration (use ephemeral/local test DB or containerized DB).
+  - Placement: Adapter/infrastructure test locations (for example `adapters/**` or
+    `infrastructure/**` test files).
+  - Allowed dependencies: Application port contracts/DTOs, adapter code, infrastructure drivers, and
+    test fixtures. Do not move business rules into these tests.
+  - Contract vs integration: Contract tests may use in-memory harnesses or stubs without real
+    dependencies; integration tests should exercise real dependencies (DB/SDK sandbox) when
+    feasible.
+  - Boundary with functional: Integration may use in-memory transport harnesses (for example
+    `httptest`) without full service bootstrap.
+- Functional tests
+  - Definition: Black-box verification of user-visible behavior through real inbound interfaces
+    (HTTP/CLI/MQ).
+  - Typical scope: End-to-end feature flows via public endpoints/commands/messages.
+  - Real DB: Allowed when needed for realistic behavior; reset state between tests.
+  - Placement: Top-level `tests/functional` (or equivalent repo-standard e2e location).
+  - Allowed dependencies: Public interface clients/test harness and fixtures. Avoid asserting on
+    domain internals or private adapter details.
+  - Boundary with integration: Prefer fully wired application bootstrap/composition root and
+    external-client-style assertions (or an equivalent black-box setup).
+- Testing code note: Testing code may reference cross-layer public interfaces/components when
+  required for verification; this does not permit breaking production dependency direction or import
+  boundaries.
 
 ## Notes
 
