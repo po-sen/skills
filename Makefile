@@ -8,6 +8,7 @@ SKILL_REF ?= master
 SKILL_PATHS := \
 	skills/clean-architecture-hexagonal-components \
 	skills/conventional-commit \
+	skills/go-project-layout \
 	skills/spec-driven-development
 SKILL_NAMES := $(notdir $(SKILL_PATHS))
 
