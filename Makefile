@@ -8,7 +8,7 @@ SKILL_REF ?= master
 SKILL_PATHS := \
 	skills/clean-architecture-hexagonal-components \
 	skills/dockerize-compose-multi-env \
-	skills/draft-commit-message \
+	skills/conventional-commit \
 	skills/sdd-spec
 SKILL_NAMES := $(notdir $(SKILL_PATHS))
 

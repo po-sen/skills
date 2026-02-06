@@ -1,5 +1,5 @@
 ---
-name: draft-commit-message
+name: conventional-commit
 description: |
   Generate a Conventional Commits message from the current working tree and commit by default.
   Stage all changes, infer type/scope from the diff, produce a compliant header with optional
@@ -7,7 +7,7 @@ description: |
   message without committing.
 ---
 
-# Draft Commit Message
+# Conventional Commit
 
 ## Purpose
 
