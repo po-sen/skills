@@ -6,9 +6,6 @@ SKILL_INSTALLER := $(CODEX_HOME)/skills/.system/skill-installer/scripts/install-
 SKILL_REPO ?= po-sen/skills
 SKILL_REF ?= master
 SKILL_PATHS := \
-	skills/add-functional-tests \
-	skills/add-integration-tests \
-	skills/add-unit-tests \
 	skills/clean-architecture-hexagonal-components \
 	skills/dockerize-compose-multi-env \
 	skills/draft-commit-message \
