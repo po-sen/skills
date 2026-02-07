@@ -119,6 +119,10 @@ the body when the hash is available.
 - Treat risk as higher for changes like API/route contracts, schema/migrations, auth/payment,
   concurrency, or error-handling behavior.
 - Keep only tests that can run in this repo; do not include commands/tooling unrelated to this repo.
+- If test coverage items are many, list only high-signal tests (for example: highest-risk paths,
+  changed behavior paths, and one happy path). Do not enumerate every test case.
+- When omitting long test lists, add one summary line for the remainder (for example:
+  `- plus <n> additional checks`).
 - Format:
   - `Tests:`
   - `- <command>`
