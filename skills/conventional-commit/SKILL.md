@@ -113,16 +113,17 @@ the body when the hash is available.
 
 #### Tests (body note)
 
-- Add a `Tests:` line when either is true:
+- Add a `Tests:` section when either is true:
   - Tests were run.
   - Risk is higher or externally observable behavior changed.
 - Treat risk as higher for changes like API/route contracts, schema/migrations, auth/payment,
   concurrency, or error-handling behavior.
 - Keep only tests that can run in this repo; do not include commands/tooling unrelated to this repo.
-- Formats:
-  - `Tests: <command>`
-  - `Tests: manual - <scenario>`
-  - `Tests: not run (reason)`
+- Format:
+  - `Tests:`
+  - `- <command>`
+  - `- manual - <scenario>`
+  - `- not run (reason)`
 
 #### Body inclusion heuristics
 
@@ -130,7 +131,7 @@ the body when the hash is available.
 - `feat` / `fix` / `perf`: usually add Why; add `Tests:` when run or risk is higher.
 - `refactor`: add Why/Impact only when diff is non-obvious or risk is higher.
 - `docs` / `style` / `ci` / `build` / `test`: usually no body; if needed, add only a 1-line Why and
-  `Tests: not run (reason)` when a Tests note is needed.
+  a `Tests:` section with `- not run (reason)` when a Tests note is needed.
 
 ### 4) Execution Steps
 
