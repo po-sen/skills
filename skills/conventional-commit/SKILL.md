@@ -58,9 +58,8 @@ Non-trivial examples: public API change, business logic change, data schema/migr
 error handling, concurrency.
 
 - Default body: prefer a short Why (1-3 lines).
-- Include Tests only when tests were run or risk is higher / behavior changes (feat/fix/perf, or any
-  change that alters externally observable behavior).
-- If tests were not run and that needs to be stated, use: `Tests: not run (reason)`.
+- Add `Tests:` only when tests were run, risk is higher, or behavior changed.
+- For `Tests:` trigger rules and format, follow Inference Rules -> Tests (body note).
 - Include What only when the diff is non-obvious or spans multiple areas (for example: `- api: ...`,
   `- ci: ...`).
 - Include Impact only when there is behavior change, compatibility/migration concerns, or likely
@@ -112,13 +111,26 @@ the body when the hash is available.
   - If <= 10: list them in Body "What"
   - If > 10: summarize count and list the first 10
 
+#### Tests (body note)
+
+- Add a `Tests:` line when either is true:
+  - Tests were run.
+  - Risk is higher or externally observable behavior changed.
+- Treat risk as higher for changes like API/route contracts, schema/migrations, auth/payment,
+  concurrency, or error-handling behavior.
+- Keep only tests that can run in this repo; do not include commands/tooling unrelated to this repo.
+- Formats:
+  - `Tests: <command>`
+  - `Tests: manual - <scenario>`
+  - `Tests: not run (reason)`
+
 #### Body inclusion heuristics
 
 - This section clarifies the Body rules above; if conflicts arise, follow Commit Message Spec.
-- `feat` / `fix` / `perf`: usually add Why; add Tests when run or risk is higher.
+- `feat` / `fix` / `perf`: usually add Why; add `Tests:` when run or risk is higher.
 - `refactor`: add Why/Impact only when diff is non-obvious or risk is higher.
-- `docs` / `style` / `ci` / `build` / `test`: usually no body; if needed, add only
-  `Tests: not run (reason)` or a 1-line Why.
+- `docs` / `style` / `ci` / `build` / `test`: usually no body; if needed, add only a 1-line Why and
+  `Tests: not run (reason)` when a Tests note is needed.
 
 ### 4) Execution Steps
 
