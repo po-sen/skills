@@ -67,6 +67,8 @@ boundaries. Components (bounded contexts) are optional for small projects.
 12. Add tests according to the Testing taxonomy below: unit (domain + use case with mocked outbound
     ports), integration + contract (adapters), and functional tests for critical user flows.
 13. Verify dependency boundaries by checking imports; fix any violations before finalizing.
+14. Run the SOLID review gate in Notes. Treat any "No" answer as a design defect; if you must accept
+    a "No", document the exception + trade-offs before finalizing.
 
 ## Testing taxonomy
 
@@ -197,6 +199,42 @@ language's standard project layout. For example, some projects keep source code 
 `src/main` (common in Java/.NET), while others place the folders at the repository root (common in
 Go, Python, etc.). Follow the standard conventions of your language, as long as the separation of
 architectural layers (domain, application, adapters, etc.) remains intact.
+
+### SOLID review gate (required before finalize)
+
+- Single Responsibility Principle (SRP)
+  - One use case represents one primary business intent (one "reason to change").
+  - Inbound ports define core-facing contracts; inbound adapters are transport-facing wrappers.
+  - Inbound adapters only parse/validate/map transport data and delegate to use cases.
+  - Repositories persist aggregates only; read-model/query ports return DTOs/views.
+  - Domain services contain only domain logic, with no IO or framework dependencies.
+- Open/Closed Principle (OCP)
+  - Add new behavior by introducing new adapters, policies, or strategy implementations.
+  - Avoid modifying stable domain/use-case code when only transport/vendor concerns change.
+  - Shape ports by core needs so implementations can vary without changing core contracts.
+- Liskov Substitution Principle (LSP)
+  - Every adapter implementation must preserve the semantics of its port contract.
+  - Nullability, error contracts, ordering, and idempotency guarantees must stay compatible across
+    implementations.
+  - Require outbound adapter contract tests (see Testing taxonomy: integration + contract) so
+    alternate implementations are safely swappable.
+- Interface Segregation Principle (ISP)
+  - Keep ports small and use-case-focused; avoid "god interfaces."
+  - Separate read-side query ports from write-side repository ports.
+  - Do not force adapters to implement methods they do not need.
+- Dependency Inversion Principle (DIP)
+  - Domain/application depend only on abstractions (ports), never concrete drivers/SDKs/frameworks.
+  - Bind abstractions to concrete adapters only in composition roots and bootstrap wiring.
+  - Keep vendor DTOs and SDK models in outbound adapters/ACLs, mapped to core DTOs/domain types.
+
+SOLID review checklist (all should be "Yes"; if "No", document exception + trade-offs):
+
+- [ ] SRP: If one feature changes, do edits stay localized to one primary module per layer?
+- [ ] OCP: Can a new transport or vendor be added by creating an adapter instead of editing core
+      rules?
+- [ ] LSP: Can implementation A and B for the same port pass the same contract test suite unchanged?
+- [ ] ISP: Does each consumer depend only on methods it actually uses?
+- [ ] DIP: Are all framework/driver objects created outside domain/application in composition roots?
 
 Non-negotiable rules (treat violations as errors):
 
